@@ -11,7 +11,6 @@
 
 #include "Application/utils.h"
 #include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 void SimpleShapeApplication::init() {
@@ -34,27 +33,6 @@ void SimpleShapeApplication::init() {
         -0.5f, -0.5f, 0.0f, // 3
          0.5f, -0.5f, 0.0f, // 4
     };
-
-    // Colors
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    const std::vector colors = {
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f,
-        0.0f, 1.0f, 0.0f
-    };
-
-    GLuint color_buffer_handle{};
-    glGenBuffers(1, &color_buffer_handle);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, color_buffer_handle);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(colors.size()) * sizeof(GLfloat), colors.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Indices
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +63,7 @@ void SimpleShapeApplication::init() {
     GLuint uniform_vertex_buffer_handle{};
     glGenBuffers(1, &uniform_vertex_buffer_handle);
     glBindBuffer(GL_UNIFORM_BUFFER, uniform_vertex_buffer_handle);
-    glBufferData(GL_UNIFORM_BUFFER, 12 * sizeof(GLfloat), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER,  sizeof(glm::mat4), nullptr, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, uniform_vertex_buffer_handle);
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,13 +87,6 @@ void SimpleShapeApplication::init() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glEnableVertexAttribArray(0);
 
-    // Colors
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    glBindBuffer(GL_ARRAY_BUFFER, color_buffer_handle);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(1);
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     // Uniforms
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///FRAGMENT SHADER
@@ -131,10 +102,19 @@ void SimpleShapeApplication::init() {
     }
     ///VERTEX SHADER
     {
-        glm::mat4 PVM(1.0f);
+        const glm::mat4 model(1.0f);
+        constexpr auto fov = 45.0f;
+        const auto projection = glm::perspective(glm::radians(fov), static_cast<float>(m_width)/ static_cast<float>(m_height), 0.1f, 100.0f);
+
+        const glm::vec3 camera_position = {0.0f, 0.0f, 2.0f};
+        const glm::vec3 camera_target = { 0.0f, 0.0f, 0.0f };
+        const glm::vec3 camera_up = { 0.0f, 1.0f, 0.0f };
+
+        const auto view = lookAt(camera_position, camera_target, camera_up);
+        const auto pvm = projection * view * model;
 
         glBindBuffer(GL_UNIFORM_BUFFER, uniform_vertex_buffer_handle);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), value_ptr(PVM));
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), value_ptr(pvm));
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
