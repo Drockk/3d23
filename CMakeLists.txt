@@ -7,7 +7,7 @@ add_compile_definitions(ROOT_DIR="${PROJECT_SOURCE_DIR}")
 include(FetchContent)
 include(ExternalProject)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_C_STANDARD 11)
 
 set(SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)

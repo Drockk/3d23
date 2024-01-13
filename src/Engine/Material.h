@@ -44,7 +44,7 @@ namespace xe {
         GLuint m_texture_uint{};
     };
 
-
+    GLuint create_texture(const std::string& name);
 }
 
 

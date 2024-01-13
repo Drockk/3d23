@@ -4,7 +4,6 @@
 
 #include "Application/application.h"
 #include "Application/utils.h"
-#include <Engine/Material.h>
 #include <Engine/Mesh.h>
 
 #include "glad/gl.h"
@@ -16,7 +15,7 @@ class SimpleShapeApplication : public xe::Application
 {
 public:
     SimpleShapeApplication(const int width, const int height, const std::string& title, const bool debug):
-    Application(width, height, title, debug), m_color_material({1.0f, 1.0f, 1.0f, 1.0f}) {
+    Application(width, height, title, debug) {
     }
 
     void init() override;
@@ -30,15 +29,10 @@ public:
     void cursor_position_callback(double x, double y) override;
 
 private:
-    void add_submesh(xe::Mesh* p_mesh);
-    void load_image(const std::string& p_path);
-
     GLuint m_uniform_vertex_buffer{};
 
     Camera m_camera;
     CameraControler m_camera_controler;
 
-    xe::ColorMaterial m_color_material;
-
-    std::vector<xe::Mesh*> m_meshes;
+    std::vector<std::shared_ptr<xe::Mesh>> m_meshes;
 };

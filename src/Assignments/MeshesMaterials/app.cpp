@@ -1,12 +1,13 @@
 #include "app.h"
 
+#include <Engine/mesh_loader.h>
+
 #include <array>
 #include <vector>
 
-#include "Application/utils.h"
 #include <glm/gtc/type_ptr.hpp>
 
-#define STB_IMAGE_IMPLEMENTATION  1
+#define STB_IMAGE_IMPLEMENTATION 1
 #include "3rdParty/stb/stb_image.h"
 
 #include <spdlog/spdlog.h>
@@ -14,43 +15,9 @@
 void SimpleShapeApplication::init() {
     xe::ColorMaterial::init();
 
-    std::vector vertices = {
-        // Positions       // Texture Coordinates
-       -0.5f, 0.0f, -0.5f, 0.1910f, 0.5000f, // 0
-        0.5f, 0.0f,  0.5f, 0.8090f, 0.5000f, // 1
-       -0.5f, 0.0f,  0.5f, 0.5000f, 0.8090f, // 2
-        0.5f, 0.0f, -0.5f, 0.5000f, 0.1910f, // 3
-        0.0f, 1.0f,  0.0f, 0.0000f, 1.0000f, // 4
-        0.0f, 1.0f,  0.0f, 1.0000f, 1.0000f, // 5
-        0.0f, 1.0f,  0.0f, 1.0000f, 0.0000f, // 6
-        0.0f, 1.0f,  0.0f, 0.0000f, 0.0000f, // 7
-    };
-
-    std::vector<GLushort> indices = {
-    1, 2, 0, // Floor 1
-    3, 1, 0, // Floor 2
-    0, 2, 4, // Wall 1
-    2, 1, 5, // Wall 2
-    1, 3, 6, // Wall 3
-    3, 0, 7  // Wall 4
-    };
-
-    auto* pyramid = new xe::Mesh;
-    pyramid->allocate_vertex_buffer(vertices.size() * sizeof(GLfloat), GL_STATIC_DRAW);
-    pyramid->load_vertices(0, vertices.size() * sizeof(GLfloat), vertices.data());
-
-    pyramid->vertex_attrib_pointer(0, 3, GL_FLOAT, 5 * sizeof(GLfloat), 0);
-    pyramid->vertex_attrib_pointer(1, 2, GL_FLOAT, 5 * sizeof(GLfloat), 3 * sizeof(GLfloat));
-
-    pyramid->allocate_index_buffer(indices.size() * sizeof(GLushort), GL_STATIC_DRAW);
-    pyramid->load_indices(0, indices.size() * sizeof(GLushort), indices.data());
-
-    pyramid->add_submesh(0, indices.size(), &m_color_material);
-
-    add_submesh(pyramid);
-
-    //Load texture
-    load_image(std::string(ROOT_DIR) + "/Models/multicolor.png");
+    auto mesh_path = std::string(ROOT_DIR) + "/Models";
+    auto mesh = xe::load_mesh_from_obj(mesh_path + "/blue_marble.obj", mesh_path);
+    m_meshes.emplace_back(mesh);
 
     // Uniforms
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +34,7 @@ void SimpleShapeApplication::init() {
     m_camera.perspective(glm::pi<float>() / 4.0f, width / height, 0.1f, 100.0f);
 
     // Calculate view
-    constexpr glm::vec3 camera_position = { 0.0f, 2.0f, 1.0f };
+    constexpr glm::vec3 camera_position = { 5.0f, 5.0f, 5.0f };
     constexpr glm::vec3 camera_target = { 0.0f, 0.0f, 0.0f };
     constexpr glm::vec3 camera_up = { 0.0f, 1.0f, 0.0f };
 
@@ -100,7 +67,7 @@ void SimpleShapeApplication::frame() {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
-    for (const auto* mesh: m_meshes)
+    for (const auto mesh: m_meshes)
     {
         mesh->draw();
     }
@@ -135,28 +102,4 @@ void SimpleShapeApplication::cursor_position_callback(double x, double y) {
     Application::cursor_position_callback(x, y);
 
     m_camera_controler.mouse_moved(x, y);
-}
-
-void SimpleShapeApplication::add_submesh(xe::Mesh* p_mesh)
-{
-    m_meshes.emplace_back(p_mesh);
-}
-
-void SimpleShapeApplication::load_image(const std::string& p_path) {
-    stbi_set_flip_vertically_on_load(true);
-    GLint width{}, height{}, channels{};
-    const auto img = stbi_load(p_path.c_str(), &width, &height, &channels, 0);
-    if (!img) {
-        spdlog::warn("Could not read image from file `{}'", p_path);
-    }
-
-    GLuint texture{};
-    glGenTextures(1, &texture);
-
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, img);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    m_color_material.set_texture(texture);
 }
