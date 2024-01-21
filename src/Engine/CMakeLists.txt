@@ -5,8 +5,10 @@ add_compile_definitions(PROJECT_NAME="${PROJECT_NAME}" PROJECT_DIR="${CMAKE_CURR
 
 add_library(engine
         Mesh.h Mesh.cpp
-        Material.h Material.cpp
+        ColorMaterial.h ColorMaterial.cpp
         mesh_loader.h mesh_loader.cpp
-        )
+        texture.h texture.cpp
+        PhongMaterial.h PhongMaterial.cpp
+ "Light.h")
 
 target_link_libraries(engine PUBLIC objreader PRIVATE spdlog::spdlog)
