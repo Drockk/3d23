@@ -4,9 +4,9 @@
 class CameraControler {
 public:
     CameraControler() = default;
-    CameraControler(Camera* p_camera) : m_camera{ p_camera } {}
+    CameraControler(xe::Camera* p_camera) : m_camera{ p_camera } {}
 
-    void set_camera(Camera* p_camera) {
+    void set_camera(xe::Camera* p_camera) {
         m_camera = p_camera;
     }
 
@@ -44,7 +44,7 @@ public:
     }
 
 private:
-    Camera* m_camera{ nullptr };
+    xe::Camera* m_camera{ nullptr };
 
     float m_scale{ 1.0f };
     bool m_lmb_pressed{ false };

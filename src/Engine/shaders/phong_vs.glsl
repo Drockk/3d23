@@ -15,16 +15,14 @@ layout(std140, binding=1) uniform Transformations {
 };
 
 out vec2 vertex_texcoords;
-out vec3 vertex_normal_vs;
-out vec3 vertex_position_vs;
+out vec3 vetex_position;
+out vec3 vertex_normal;
 
 void main() {
     vertex_texcoords = a_vertex_texcoords;
 
-    vec4 a_vertex_position_vs = VM * a_vertex_position;
-    vertex_position_vs = a_vertex_position_vs.xyz/a_vertex_position_vs.w;
+    vetex_position = vec3(VM * a_vertex_position);
+    vertex_normal = N * a_vertex_normal;
 
-    vertex_normal_vs = normalize(N * a_vertex_normal);
-
-    gl_Position =  PVM*a_vertex_position;
+    gl_Position =  PVM * a_vertex_position;
 }

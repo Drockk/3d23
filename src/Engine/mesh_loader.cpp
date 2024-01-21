@@ -61,6 +61,8 @@ namespace
                 material->set_texture(texture);
             }
         }
+        material->set_ambient(glm::vec3(mat.ambient[0], mat.ambient[1], mat.ambient[2]));
+        material->set_specular(glm::vec3(mat.specular[0], mat.specular[1], mat.specular[2]), mat.shininess);
 
         return material;
     }

@@ -42,8 +42,9 @@ private:
 
     GLuint m_uniform_vertex_buffer{};
     GLuint m_uniform_lights_buffer{};
+    GLuint m_uniform_camera_buffer{};
 
-    Camera m_camera;
+    xe::Camera m_camera;
     CameraControler m_camera_controler;
 
     std::vector<std::shared_ptr<xe::Mesh>> m_meshes;

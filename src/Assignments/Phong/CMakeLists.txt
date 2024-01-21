@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(PhongDiffuse)
+project(Phong)
 
 add_compile_definitions(PROJECT_NAME="${PROJECT_NAME}" PROJECT_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 

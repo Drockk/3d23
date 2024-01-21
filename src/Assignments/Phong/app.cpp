@@ -27,15 +27,22 @@ struct Transformations
 {
     glm::mat4 PVM;
     alignas(16) glm::mat4 VM;
-    alignas(16) glm::mat3 N;
+    alignas(16) glm::mat4 N;
 };
+
+xe::PointLight transform_point_light(const xe::PointLight& light, const glm::mat4& M)
+{
+    xe::PointLight transformed_light(light);
+    transformed_light.position_in_vs = glm::vec3(M * glm::vec4(light.position_in_vs, 1.0f));
+    return transformed_light;
+}
 
 void SimpleShapeApplication::init() {
     xe::ColorMaterial::init();
     xe::PhongMaterial::init();
 
-    auto mesh_path = std::string(ROOT_DIR) + "/Models";
-    auto mesh = xe::load_mesh_from_obj(mesh_path + "/cube.obj", mesh_path);
+    const auto mesh_path = std::string(ROOT_DIR) + "/Models";
+    auto mesh = xe::load_mesh_from_obj(mesh_path + "/cube_2.obj", mesh_path);
     m_meshes.emplace_back(mesh);
 
     // Uniforms
@@ -53,22 +60,31 @@ void SimpleShapeApplication::init() {
     glBufferData(GL_UNIFORM_BUFFER, sizeof(Lights), nullptr, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_uniform_lights_buffer);
+
+    ///Camera uniform
+    glGenBuffers(1, &m_uniform_camera_buffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, m_uniform_camera_buffer);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::vec3), nullptr, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 3, m_uniform_camera_buffer);
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Add ambient color
-    add_ambient({ 0.25f, 0.25f, 0.25f });
+    add_ambient({ 1.0f, 1.0f, 1.0f });
     // Add lights
-    const auto light = xe::PointLight({ 0.0, 4.0, 0.0 }, { 0.0, 1.0, 0.0 }, 5.0f, 0.1f);
-    add_light(light);
+    const auto light = xe::PointLight({ 1.0, 0.0, 2.0 }, { 0.0, 1.0, 0.0 }, 1.0f, 0.1f);
+    add_light(transform_point_light(light, glm::mat4(1.0f)));
+    //const auto light_2 = xe::PointLight({ 0.0, 5.0, 5.0 }, { 0.0, 0.0, 1.0 }, 1.0f, 0.1f);
+    //add_light(transform_point_light(light_2, glm::mat4(1.0f)));
 
     //Calculate projection
     const auto& [width, height] = frame_buffer_size();
     m_camera.perspective(glm::pi<float>() / 4.0f, width / height, 0.1f, 100.0f);
 
     // Calculate view
-    constexpr glm::vec3 camera_position = { 5.0f, 10.0f, 5.0f };
-    constexpr glm::vec3 camera_target = { 0.0f, 0.5f, 0.0f };
-    constexpr glm::vec3 camera_up = { 1.0f, 0.0f, 0.0f };
+    constexpr glm::vec3 camera_position = { 0.0f, 0.0f, 10.0f };
+    constexpr glm::vec3 camera_target = { 0.0f, 0.0f, -1.0f };
+    constexpr glm::vec3 camera_up = { 0.0f, 1.0f, 0.0f };
 
     m_camera.look_at(camera_position, camera_target, camera_up);
     m_camera_controler.set_camera(&m_camera);
@@ -102,6 +118,11 @@ void SimpleShapeApplication::frame() {
 
     glBindBuffer(GL_UNIFORM_BUFFER, m_uniform_vertex_buffer);
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(Transformations), &transformations);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    const auto camera_position = m_camera.position();
+    glBindBuffer(GL_UNIFORM_BUFFER, m_uniform_camera_buffer);
+    glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec3), &camera_position);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     //Light uniform

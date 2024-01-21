@@ -9,16 +9,40 @@
 
 #include "Engine/Material.h"
 
+struct PhongMaterialData
+{
+    glm::vec4 diffuse_color;
+    uint32_t use_map_diffuse;
+    alignas(16) glm::vec3 ambient_color;
+    alignas(16)glm::vec3 specular_color;
+    float specular_strength;
+};
+
 namespace xe {
     class PhongMaterial : public Material {
     public:
-        PhongMaterial(const glm::vec4 color) : color_(color) {}
+        PhongMaterial(const glm::vec4 color)
+        {
+            m_data.diffuse_color = color;
+        }
 
         void bind() final;
 
         void set_texture(const GLuint p_texture) {
             m_texture = p_texture;
-            m_texture_uint = p_texture; }
+            m_texture_uint = p_texture;
+        }
+
+        void set_ambient(const glm::vec3& p_ambient_color)
+        {
+            m_data.ambient_color = p_ambient_color;
+        }
+
+        void set_specular(const glm::vec3& p_specular_color, const float p_specular_strength)
+        {
+            m_data.specular_color = p_specular_color;
+            m_data.specular_strength = p_specular_strength;
+        }
 
         static void init();
 
@@ -28,11 +52,10 @@ namespace xe {
         static GLuint shader_;
         static GLuint color_uniform_buffer_;
 
-        glm::vec4 color_;
-
-
         inline static GLint m_uniform_map_Kd_location{0};
         GLuint m_texture{};
         GLuint m_texture_uint{};
+
+        PhongMaterialData m_data;
     };
 }

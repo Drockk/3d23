@@ -16,19 +16,18 @@ namespace xe {
     GLuint PhongMaterial::shader_ = 0u;
 
     void PhongMaterial::bind() {
-        auto use_map_kd = false;
+        m_data.use_map_diffuse = 0;
         if (m_texture > 0) {
             glUniform1i(m_uniform_map_Kd_location, m_texture_uint);
             glActiveTexture(GL_TEXTURE0 + m_texture_uint);
             glBindTexture(GL_TEXTURE_2D, m_texture);
-            use_map_kd = true;
+            m_data.use_map_diffuse = 1;
         }
 
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, color_uniform_buffer_);
         glUseProgram(program());
         glBindBuffer(GL_UNIFORM_BUFFER, color_uniform_buffer_);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec4), &color_[0]);
-        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::vec4), sizeof(bool), &use_map_kd);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(PhongMaterialData), &m_data);
         glBindBuffer(GL_UNIFORM_BUFFER, 0u);
     }
 
@@ -47,7 +46,7 @@ namespace xe {
         glGenBuffers(1, &color_uniform_buffer_);
 
         glBindBuffer(GL_UNIFORM_BUFFER, color_uniform_buffer_);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::vec4) * 2, nullptr, GL_STATIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(PhongMaterialData), nullptr, GL_STATIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0u);
 #ifdef __APPLE__
         auto u_modifiers_index = glGetUniformBlockIndex(program, "Color");
